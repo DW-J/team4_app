@@ -51,11 +51,11 @@
 <section class="fortune-page app" id="fortunePage" hidden tabindex="-1">
   <button class="page-back" type="button" data-page="menuPage">← 메뉴로 돌아가기</button>
   <p class="eyebrow">✦ 사주풀이</p><h1 class="title" tabindex="-1">태어난 날에 담긴<br>나의 이야기</h1>
-  <p class="lead">생년월일을 입력하면 Gemini가 사주에서 영감을 받은 해석을 들려줍니다.</p>
+  <p class="lead">생년월일을 입력하면 OpenAI가 사주에서 영감을 받은 해석을 들려줍니다.</p>
   <form id="fortuneForm" class="card">
     <label class="field" for="birthDate">생년월일 (양력)</label><input class="input" id="birthDate" name="birthDate" type="date" required>
     <label class="field" for="birthTime">태어난 시간 (선택)</label><input class="input" id="birthTime" name="birthTime" type="time">
-    <p class="small">입력한 생년월일과 시간은 해석을 위해 Google Gemini API로 전송됩니다. 앱은 이를 저장하지 않습니다.</p>
+    <p class="small">입력한 생년월일과 시간은 해석을 위해 OpenAI API로 전송됩니다. 앱은 이를 저장하지 않습니다.</p>
     <p class="small">AI의 창작 해석이며, 정확한 만세력 계산이나 중요한 결정의 근거가 아닙니다.</p>
     <button class="cta" id="fortuneSubmit" type="submit">사주 이야기 살펴보기</button>
   </form>

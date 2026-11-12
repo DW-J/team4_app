@@ -1,4 +1,4 @@
-"""Local development server for 마음풀이 and the Gemini fortune endpoint."""
+"""Local development server for 마음풀이 and the OpenAI fortune endpoint."""
 import datetime
 import json
 import mimetypes
@@ -9,7 +9,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parent
-MODEL = 'gemini-3.5-flash'
+MODEL = 'gpt-4.1-mini'
 STATIC = {'/': ROOT / 'index.html', '/index.html': ROOT / 'index.html',
           '/styles.css': ROOT / 'styles.css', '/app.js': ROOT / 'app.js'}
 ASSETS = {'guardian-gold.png', 'guardian-white.png', 'clouds.png'}
@@ -40,16 +40,15 @@ def generate_fortune(date, time, key):
               '정확한 사주팔자나 만세력을 계산했다고 주장하지 마세요. '
               '성격과 강점, 돌아볼 점, 일상에서 해볼 작은 실천을 포함하세요. '
               '의료, 법률, 재정 등의 중요한 결정을 예언하거나 단정하지 마세요.')
-    payload = json.dumps({'contents': [{'parts': [{'text': prompt}]}]}, ensure_ascii=False).encode('utf-8')
-    request = Request(f'https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent',
-                      data=payload, headers={'Content-Type': 'application/json', 'x-goog-api-key': key}, method='POST')
+    payload = json.dumps({'model': MODEL, 'input': prompt, 'store': False, 'max_output_tokens': 800}, ensure_ascii=False).encode('utf-8')
+    request = Request('https://api.openai.com/v1/responses', data=payload,
+                      headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {key}'}, method='POST')
     with urlopen(request, timeout=45) as response:
         result = json.load(response)
-    candidates = result.get('candidates') or []
-    if not candidates:
-        raise ValueError('해석을 생성하지 못했습니다. 잠시 후 다시 시도해 주세요.')
-    parts = candidates[0].get('content', {}).get('parts', [])
-    text = ''.join(part.get('text', '') for part in parts).strip()
+    parts = [part.get('text', '') for item in result.get('output', [])
+             if item.get('type') == 'message' for part in item.get('content', [])
+             if part.get('type') == 'output_text']
+    text = ''.join(parts).strip()
     if not text:
         raise ValueError('해석을 생성하지 못했습니다. 잠시 후 다시 시도해 주세요.')
     return text
@@ -102,27 +101,27 @@ class Handler(BaseHTTPRequestHandler):
         except (ValueError, UnicodeDecodeError, json.JSONDecodeError):
             self.send_json(400, {'error': '생년월일과 시간을 확인해 주세요.'})
             return
-        key = os.environ.get('GEMINI_API_KEY', '').strip()
+        key = os.environ.get('OPENAI_API_KEY', '').strip()
         if not key:
-            self.send_json(503, {'error': 'GEMINI_API_KEY가 설정되지 않았습니다. README의 실행 방법을 확인해 주세요.'})
+            self.send_json(503, {'error': 'OPENAI_API_KEY가 설정되지 않았습니다. README의 실행 방법을 확인해 주세요.'})
             return
         try:
             result = generate_fortune(date, time, key)
         except HTTPError as exc:
             if exc.code in (400, 401, 403):
-                message = 'Gemini API 키 또는 모델 접근 권한을 확인해 주세요.'
+                message = 'OpenAI API 키 또는 모델 접근 권한을 확인해 주세요.'
             elif exc.code == 404:
-                message = 'Gemini 모델을 사용할 수 없습니다. 서버의 모델 설정을 확인해 주세요.'
+                message = 'OpenAI 모델을 사용할 수 없습니다. 서버의 모델 설정을 확인해 주세요.'
             elif exc.code == 503:
-                message = 'Gemini 서비스가 혼잡합니다. 잠시 후 다시 시도해 주세요.'
+                message = 'OpenAI 서비스가 혼잡합니다. 잠시 후 다시 시도해 주세요.'
             elif exc.code == 429:
-                message = 'Gemini 요청 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.'
+                message = 'OpenAI 요청 한도에 도달했습니다. 잠시 후 다시 시도해 주세요.'
             else:
-                message = 'Gemini 서비스에서 요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.'
+                message = 'OpenAI 서비스에서 요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.'
             self.send_json(502, {'error': message})
             return
         except (URLError, TimeoutError, ValueError, KeyError):
-            self.send_json(502, {'error': 'Gemini 연결 또는 응답에 문제가 있습니다. 잠시 후 다시 시도해 주세요.'})
+            self.send_json(502, {'error': 'OpenAI 연결 또는 응답에 문제가 있습니다. 잠시 후 다시 시도해 주세요.'})
             return
         self.send_json(200, {'result': result})
 
