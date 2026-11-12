@@ -19,7 +19,7 @@
     <p class="opening-eyebrow">잠시 쉬어가는 마음의 자리</p>
     <h1 class="opening-logo">✦ 마음풀이</h1>
     <p class="opening-lead">오늘의 마음을 가만히 풀어보세요</p>
-    <button class="opening-start" id="openingStart" type="button">마음풀이 하기 <span aria-hidden="true">→</span></button>
+    <button class="opening-start" id="openingStart" type="button">문 열고 들어가기 <span aria-hidden="true">→</span></button>
   </div>
     <div class="guardian guardian-right">
       <button type="button" class="guardian-button" aria-label="오른쪽 인물의 말 듣기" aria-expanded="false" aria-controls="rightSpeech"><img class="opening-guardian" src="assets/guardian-white.png" alt=""></button>
@@ -35,8 +35,34 @@
     <div class="jangseung jangseung-right"><div class="jangseung-face"><span>◉　◉</span><b>︿</b></div><div class="jangseung-name">地下大將軍<small>지하대장군</small></div></div>
   </div>
 </section>
-<div class="smoke" id="transitionSmoke" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+<div class="cloud-transition" id="transitionCloud" aria-hidden="true"><div class="cloud-curtain"></div><i></i><i></i><i></i></div>
+<main class="menu-page" id="menuPage" hidden tabindex="-1">
+  <div class="menu-inner">
+    <p class="eyebrow">✦ 마음의 쉼터</p>
+    <h1 tabindex="-1">오늘, 어떤 이야기를<br>풀어볼까요?</h1>
+    <p class="menu-lead">잠시 멈춰 나의 마음과 이야기를 들여다보세요.</p>
+    <div class="menu-choices">
+      <button class="menu-choice choice-heart" type="button" data-page="mainApp"><span class="choice-icon" aria-hidden="true">✧</span><strong>마음풀이</strong><span>맺힌 감정을 풀어내고<br>마음에 쉼을 선물해요</span><b aria-hidden="true">시작하기 ↗</b></button>
+      <button class="menu-choice choice-fortune" type="button" data-page="fortunePage"><span class="choice-icon" aria-hidden="true">☯</span><strong>사주풀이</strong><span>태어난 날을 바탕으로<br>나만의 이야기를 살펴봐요</span><b aria-hidden="true">살펴보기 ↗</b></button>
+    </div>
+    <p class="menu-note">전통에서 영감을 얻은 창작 체험입니다.</p>
+  </div>
+</main>
+<section class="fortune-page app" id="fortunePage" hidden tabindex="-1">
+  <button class="page-back" type="button" data-page="menuPage">← 메뉴로 돌아가기</button>
+  <p class="eyebrow">✦ 사주풀이</p><h1 class="title" tabindex="-1">태어난 날에 담긴<br>나의 이야기</h1>
+  <p class="lead">생년월일을 입력하면 Gemini가 사주에서 영감을 받은 해석을 들려줍니다.</p>
+  <form id="fortuneForm" class="card">
+    <label class="field" for="birthDate">생년월일 (양력)</label><input class="input" id="birthDate" name="birthDate" type="date" required>
+    <label class="field" for="birthTime">태어난 시간 (선택)</label><input class="input" id="birthTime" name="birthTime" type="time">
+    <p class="small">입력한 생년월일과 시간은 해석을 위해 Google Gemini API로 전송됩니다. 앱은 이를 저장하지 않습니다.</p>
+    <p class="small">AI의 창작 해석이며, 정확한 만세력 계산이나 중요한 결정의 근거가 아닙니다.</p>
+    <button class="cta" id="fortuneSubmit" type="submit">사주 이야기 살펴보기</button>
+  </form>
+  <div class="card fortune-result" id="fortuneResult" role="status" aria-live="polite" hidden></div>
+</section>
 <main class="app" id="mainApp" hidden>
+<button class="page-back" type="button" data-page="menuPage">← 메뉴로 돌아가기</button>
 <header class="header"><div class="brand">✦ 마음풀이</div><button class="sound" id="soundBtn">🔊 소리 켜짐</button></header>
 <div class="progress" id="progress"></div><nav class="app-nav"><button type="button" id="backBtn" onclick="goBack()">← 전 단계로 돌아가기</button><button type="button" onclick="restart()">↺ 처음부터 다시 하기</button></nav>
 <section id="screen" aria-live="polite"></section>

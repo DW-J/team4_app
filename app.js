@@ -314,7 +314,10 @@ render();
 // Speech bubbles can be opened with a pointer, touch, or keyboard.
 const opening = document.querySelector('#opening');
 const mainApp = document.querySelector('#mainApp');
-const smoke = document.querySelector('#transitionSmoke');
+const cloud = document.querySelector('#transitionCloud');
+const pages = ['opening', 'menuPage', 'mainApp', 'fortunePage'].map(id => document.getElementById(id));
+let currentPage = opening;
+let transitioning = false;
 const startButton = document.querySelector('#openingStart');
 const guardians = [...document.querySelectorAll('.guardian')];
 const rightSpeech = document.querySelector('#rightSpeech');
@@ -349,26 +352,51 @@ const reminder = setTimeout(() => {
   guardians[1].querySelector('.guardian-button').setAttribute('aria-expanded', 'true');
 }, 10000);
 
+function navigateTo(id) {
+  const target = document.getElementById(id);
+  if (!target || target === currentPage || transitioning) return;
+  transitioning = true;
+  const swap = () => {
+    if (currentPage === mainApp) stopClothAnim();
+    currentPage.hidden = true;
+    target.hidden = false;
+    currentPage = target;
+    if (target === mainApp && state.page === 2 && state.ripped) initCloths();
+    window.scrollTo(0, 0);
+    (target.querySelector('h1') || target).focus();
+  };
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    swap(); transitioning = false; return;
+  }
+  cloud.classList.add('moving');
+  setTimeout(swap, 650);
+  setTimeout(() => { cloud.classList.remove('moving'); transitioning = false; }, 1500);
+}
 startButton.addEventListener('click', () => {
   if (entering) return;
   entering = true;
   clearTimeout(reminder);
-  startButton.disabled = true;
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reducedMotion) {
-    opening.hidden = true;
-    mainApp.hidden = false;
-    mainApp.querySelector('h1')?.focus();
-    window.scrollTo(0, 0);
-    return;
-  }
-  smoke.classList.add('covering');
-  setTimeout(() => {
-    opening.hidden = true;
-    mainApp.hidden = false;
-    window.scrollTo(0, 0);
-    mainApp.querySelector('h1')?.focus();
-    smoke.classList.replace('covering', 'clearing');
-    setTimeout(() => smoke.classList.remove('clearing'), 900);
-  }, 900);
+  navigateTo('menuPage');
+});
+document.querySelectorAll('[data-page]').forEach(button => button.addEventListener('click', () => navigateTo(button.dataset.page)));
+
+const fortuneForm = document.querySelector('#fortuneForm');
+const fortuneResult = document.querySelector('#fortuneResult');
+fortuneForm.addEventListener('submit', async event => {
+  event.preventDefault();
+  const submit = document.querySelector('#fortuneSubmit');
+  submit.disabled = true;
+  fortuneResult.hidden = false;
+  fortuneResult.textContent = '사주 이야기를 살펴보고 있어요...';
+  try {
+    const response = await fetch('/api/fortune', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({birthDate: document.querySelector('#birthDate').value, birthTime: document.querySelector('#birthTime').value})
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || '요청을 처리하지 못했습니다.');
+    fortuneResult.textContent = data.result;
+  } catch (error) {
+    fortuneResult.textContent = error.message || '서버에 연결하지 못했습니다. 로컬 서버를 확인해 주세요.';
+  } finally { submit.disabled = false; }
 });
