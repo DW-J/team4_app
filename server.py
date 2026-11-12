@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parent
 MODEL = 'gpt-4.1-mini'
 STATIC = {'/': ROOT / 'index.html', '/index.html': ROOT / 'index.html',
           '/styles.css': ROOT / 'styles.css', '/app.js': ROOT / 'app.js'}
-ASSETS = {'guardian-gold.png', 'guardian-white.png', 'clouds.png'}
+ASSETS = {'guardian-gold.png', 'guardian-white.png', 'clouds.png', 'background-music.mp3'}
 
 
 def validate_birth(data):

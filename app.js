@@ -2,6 +2,7 @@
 const $=q=>document.querySelector(q);
 const state={page:0,before:3,after:3,nickname:'',feeling:'',sound:true,knotIndex:0,knotStep:0,beats:0,ripped:false,clothsCleared:0,cloths:[],wish:'평안',drawing:false,drawnLength:0,charInk:[0,0]};
 const screens=['시작','해원','살풀이','액막이','완료'];
+const DRUM_TARGET=10;
 let audioCtx=null,draggingKnot=false,fallAnim=null,clothDrag=null,canvasCtx=null,lastPt=null,clothStarted=false;
 function escapeHTML(t){return String(t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function message(t){const el=document.createElement('div');el.textContent=t;el.style.cssText='position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:99;background:#f4d89c;color:#281b1a;border-radius:18px;padding:11px 14px;font-size:12px;max-width:92%;box-shadow:0 10px 30px #0006';document.body.append(el);setTimeout(()=>el.remove(),2200)}
@@ -23,7 +24,7 @@ function knotTargetPositions(){return [{x:269,y:73},{x:316,y:110},{x:329,y:157}]
 function drawKnot(){
   const seg=emotionSegments()[state.knotIndex]||'감정';
   const t=knotTargetPositions()[Math.min(state.knotStep,2)];
-  return `<svg id="ropeSvg" viewBox="0 0 360 240" role="img" aria-label="감정이 묶인 줄을 세 차례 당겨 푸는 장면">
+  return `<svg id="ropeSvg" viewBox="0 0 360 240" role="img" aria-label="감정이 묶인 줄을 한 번 당겨 푸는 장면">
   <defs><linearGradient id="ropeFiber" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff0cf"/><stop offset=".48" stop-color="#ddc49a"/><stop offset="1" stop-color="#aa8964"/></linearGradient></defs>
   <path id="ropeBack" class="rope-back" d="" fill="none" stroke="#b69876" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
   <path id="ropeMain" class="rope-front" d="" fill="none" stroke="url(#ropeFiber)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
@@ -70,19 +71,19 @@ function refreshEmotionPreview(){
   if(tag) tag.textContent=labels[state.knotIndex]||'감정';
 }
 function knotInstruction(){
-  return ['① 고리를 느슨하게 위로 끌어올리기','② 옆으로 빼내며 고리 열기','③ 끝줄을 아래로 당겨 매듭 풀기'][state.knotStep] || '매듭을 풀었습니다.';
+  return '빛나는 원을 향해 손잡이를 위로 당겨 매듭을 풀어주세요.';
 }
-function drumSVG(){return `<svg viewBox="0 0 260 260" aria-hidden="true"><defs><radialGradient id="skin"><stop stop-color="#f6e5c9"/><stop offset=".8" stop-color="#deb983"/><stop offset="1" stop-color="#a7794c"/></radialGradient><linearGradient id="barrel"><stop stop-color="#704029"/><stop offset=".52" stop-color="#b56c42"/><stop offset="1" stop-color="#643820"/></linearGradient></defs><ellipse cx="130" cy="214" rx="99" ry="26" fill="#0d0a10" opacity=".65"/><path d="M33 95 L227 95 L215 196 Q130 245 45 196Z" fill="url(#barrel)" stroke="#d69e64" stroke-width="6"/><path d="M50 109 L204 214 M78 104 L180 224 M209 109 L54 214 M184 103 L84 222" stroke="#eac39a" stroke-width="6" opacity=".8"/><ellipse cx="130" cy="90" rx="101" ry="66" fill="#52321e" stroke="#e1af71" stroke-width="7"/><ellipse cx="130" cy="88" rx="90" ry="55" fill="url(#skin)" stroke="#926540" stroke-width="5"/><ellipse cx="130" cy="89" rx="68" ry="38" fill="none" stroke="#a68153" stroke-width="2" opacity=".45"/>${state.beats>=15&&!state.ripped?'<path d="M126 57 L143 82 L130 98 L147 125" fill="none" stroke="#86603e" stroke-width="2.5"/>':''}${state.ripped?'<path d="M122 40 L145 72 L124 98 L164 124 L118 134 L104 105 L81 127 L100 88 L79 61 Z" fill="#281c19" stroke="#875b37" stroke-width="5"/><path d="M122 40 L123 84 L104 105 M145 72 L164 124 M124 98 L118 134" fill="none" stroke="#f3d5a0" stroke-width="3" opacity=".8"/>':''}</svg>`}
+function drumSVG(){return `<svg viewBox="0 0 260 260" aria-hidden="true"><defs><radialGradient id="skin"><stop stop-color="#f6e5c9"/><stop offset=".8" stop-color="#deb983"/><stop offset="1" stop-color="#a7794c"/></radialGradient><linearGradient id="barrel"><stop stop-color="#704029"/><stop offset=".52" stop-color="#b56c42"/><stop offset="1" stop-color="#643820"/></linearGradient></defs><ellipse cx="130" cy="214" rx="99" ry="26" fill="#0d0a10" opacity=".65"/><path d="M33 95 L227 95 L215 196 Q130 245 45 196Z" fill="url(#barrel)" stroke="#d69e64" stroke-width="6"/><path d="M50 109 L204 214 M78 104 L180 224 M209 109 L54 214 M184 103 L84 222" stroke="#eac39a" stroke-width="6" opacity=".8"/><ellipse cx="130" cy="90" rx="101" ry="66" fill="#52321e" stroke="#e1af71" stroke-width="7"/><ellipse cx="130" cy="88" rx="90" ry="55" fill="url(#skin)" stroke="#926540" stroke-width="5"/><ellipse cx="130" cy="89" rx="68" ry="38" fill="none" stroke="#a68153" stroke-width="2" opacity=".45"/>${state.beats>=DRUM_TARGET/2&&!state.ripped?'<path d="M126 57 L143 82 L130 98 L147 125" fill="none" stroke="#86603e" stroke-width="2.5"/>':''}${state.ripped?'<path d="M122 40 L145 72 L124 98 L164 124 L118 134 L104 105 L81 127 L100 88 L79 61 Z" fill="#281c19" stroke="#875b37" stroke-width="5"/><path d="M122 40 L123 84 L104 105 M145 72 L164 124 M124 98 L118 134" fill="none" stroke="#f3d5a0" stroke-width="3" opacity=".8"/>':''}</svg>`}
 function render(){
   progress();
   let h='';
   if(state.page===0){h=`<div class="eyebrow">MVP 시작</div><h1 class="title" tabindex="-1">마음풀이 의식을<br>시작합니다</h1><p class="lead">지금의 답답함을 짧은 의식으로 정리해보세요. 시작 전 마음 상태를 먼저 골라주세요.</p>${info('앱의 방식','해원 → 살풀이 → 액막이의 순서로 진행합니다. 각각은 맺힌 감정 풀기, 감정 털어내기, 평안 기원하기의 의미를 가집니다.')}<div class="card"><div class="field">현재 스트레스 강도 (1~5)</div>${score('before')}</div><button class="cta" onclick="goto(1)">해원 시작하기</button>`}
   if(state.page===1){
     const labels=emotionSegments();
-    h=`<div class="eyebrow">第一 · 해원 解冤</div><h1 class="title">감정을 적고,<br>매듭에서 직접 풀어내세요</h1><p class="lead">적어둔 감정이 종잇조각처럼 매듭에 묶입니다. 빛나는 순서대로 고리를 느슨하게 만들고, 빼내고, 끝줄을 당겨 풀어보세요.</p>${info('해원·고풀이','해원은 맺힌 원한이나 억울함을 푼다는 뜻입니다. 전라도 씻김굿의 고풀이에서는 매듭을 풀어 한을 해소하는 모습을 상징적으로 표현합니다.','이 화면에서는 사용자가 적은 감정 조각을 매듭에 매단 뒤, 3단계 동작으로 풀어내는 창작적 체험으로 바꾸었습니다.')}<label class="field" for="nick">마음에 걸리는 대상·상황의 별명 (선택)</label><input class="input" id="nick" maxlength="30" placeholder="예: 직장 동료, 마감, 관계" value="${escapeHTML(state.nickname)}" oninput="state.nickname=this.value"><label class="field" for="feeling">풀어내고 싶은 감정이나 말 (선택)</label><textarea class="input" id="feeling" maxlength="300" placeholder="예: 배고픔 짜증남 졸림 (띄어쓰기 또는 쉼표로 구분)" oninput="state.feeling=this.value;refreshEmotionPreview()">${escapeHTML(state.feeling)}</textarea><div class="emotion-tags">${labels.map((x,i)=>`<span>${i+1}. ${escapeHTML(x)}</span>`).join('')}</div><div class="card"><div class="row"><b>감정 매듭 ${Math.min(3,state.knotIndex+1)} / 3</b><span class="badge">3단계로 풀기</span></div><div class="knot-tabs">${labels.map((x,i)=>`<button class="${i<state.knotIndex?'done':i===state.knotIndex?'active':''}" onclick="selectKnot(${i})">${i<state.knotIndex?'✓ ':''}${escapeHTML(x)}</button>`).join('')}</div><div class="knot-card">${drawKnot()}</div><div class="step-list"><div class="${state.knotStep>0?'done':state.knotStep===0?'active':''}">느슨하게 올리기</div><div class="${state.knotStep>1?'done':state.knotStep===1?'active':''}">고리 빼내기</div><div class="${state.knotStep>2?'done':state.knotStep===2?'active':''}">끝줄 당기기</div></div><p class="hint center" id="knotHint">${state.knotIndex>=3?'세 감정의 매듭을 모두 풀었습니다.':knotInstruction()}</p><div class="meter"><div style="width:${(state.knotIndex/3)*100}%"></div></div><button class="secondary" onclick="assistKnot()">동작이 어려우면 현재 매듭 건너뛰기</button></div><button class="cta" onclick="goto(2)" ${state.knotIndex<3?'disabled':''}>살풀이로 이어가기</button>`;
+    h=`<div class="eyebrow">第一 · 해원 解冤</div><h1 class="title">감정을 적고,<br>매듭에서 직접 풀어내세요</h1><p class="lead">적어둔 감정이 종잇조각처럼 매듭에 묶입니다. 각 매듭의 손잡이를 빛나는 원까지 한 번씩 당겨 풀어보세요.</p>${info('해원·고풀이','해원은 맺힌 원한이나 억울함을 푼다는 뜻입니다. 전라도 씻김굿의 고풀이에서는 매듭을 풀어 한을 해소하는 모습을 상징적으로 표현합니다.','이 화면에서는 사용자가 적은 감정 조각을 매듭에 매단 뒤, 한 번의 당김으로 풀어내는 창작적 체험으로 바꾸었습니다.')}<label class="field" for="nick">마음에 걸리는 대상·상황의 별명 (선택)</label><input class="input" id="nick" maxlength="30" placeholder="예: 직장 동료, 마감, 관계" value="${escapeHTML(state.nickname)}" oninput="state.nickname=this.value"><label class="field" for="feeling">풀어내고 싶은 감정이나 말 (선택)</label><textarea class="input" id="feeling" maxlength="300" placeholder="예: 배고픔 짜증남 졸림 (띄어쓰기 또는 쉼표로 구분)" oninput="state.feeling=this.value;refreshEmotionPreview()">${escapeHTML(state.feeling)}</textarea><div class="emotion-tags">${labels.map((x,i)=>`<span>${i+1}. ${escapeHTML(x)}</span>`).join('')}</div><div class="card"><div class="row"><b>감정 매듭 ${Math.min(3,state.knotIndex+1)} / 3</b><span class="badge">한 번씩 당겨 풀기</span></div><div class="knot-tabs">${labels.map((x,i)=>`<button class="${i<state.knotIndex?'done':i===state.knotIndex?'active':''}" onclick="selectKnot(${i})">${i<state.knotIndex?'✓ ':''}${escapeHTML(x)}</button>`).join('')}</div><div class="knot-card">${drawKnot()}</div><p class="hint center" id="knotHint">${state.knotIndex>=3?'세 감정의 매듭을 모두 풀었습니다.':knotInstruction()}</p><div class="meter"><div style="width:${(state.knotIndex/3)*100}%"></div></div><button class="secondary" onclick="assistKnot()">동작이 어려우면 현재 매듭 건너뛰기</button></div><button class="cta" onclick="goto(2)" ${state.knotIndex<3?'disabled':''}>살풀이로 이어가기</button>`;
   }
   if(state.page===2){
-    h=`<div class="eyebrow">第二 · 살풀이 煞풀이</div><h1 class="title">북을 울리고,<br>하늘의 흰 천을 날려보내세요</h1><p class="lead">북을 여러 번 두드려 장단을 만들고, 30회가 지나면 북가죽이 상징적으로 찢어집니다. 이후 하늘에서 내려오는 흰 천들을 땅에 닿기 전에 밀어 화면 밖으로 보내세요.</p>${info('살풀이·굿 장단','살풀이는 액이나 나쁜 기운을 풀어낸다는 의미와 연결됩니다. 굿에서는 북 같은 타악기가 의례의 장단과 몰입감을 이끕니다. 살풀이춤은 흰 수건으로 감정을 흘려보내는 정서를 보여줍니다.','앱에서의 북 파열은 전통 굿의 고정 절차가 아니라 “안에 갇힌 감정이 터져 밖으로 나온다”는 상징적 전환입니다.')}<div class="card center"><div class="small">북을 눌러 타격음을 들어보세요 · 30회 이상 두드리면 전환</div><div class="drum-area"><div class="ripples" id="ripples"></div><button id="drum" class="drum-btn" onclick="hitDrum()" aria-label="북 두드리기" ${state.ripped?'disabled':''}>${drumSVG()}</button></div><div class="count" id="beatCount">${state.beats} <span style="font-size:14px;color:#cabac7">/ 30</span></div><div class="meter"><div id="drumMeter" style="width:${Math.min(100,state.beats/30*100)}%"></div></div><p class="${state.ripped?'success':'small'}">${state.ripped?'북가죽이 열리듯 응어리가 밖으로 터져 나왔습니다. 이제 떨어지는 흰 천을 밀어 밖으로 날려보내세요.':'북소리 · 파동 · 진동이 함께 반응합니다.'}</p><button class="secondary" onclick="resetDrum()">북 다시 만들기</button></div><div class="card ${state.ripped?'':'hidden'}"><div class="row"><b>흰 천 보내기</b><span class="badge">${state.clothsCleared} / ${state.cloths.length||6}</span></div><p class="small">북을 완전히 두드린 뒤, 아래 버튼을 눌렀을 때부터 천이 떨어집니다. 천을 땅에 닿기 전에 좌우로 스와이프하세요. 놓치면 다시 내려옵니다. 놓친 천은 위에서 다시 떨어집니다.</p><button class="fall-start" onclick="startCloths()" id="clothStart">${clothStarted?'↻ 떨어뜨리기 다시 시작':'☁ 흰 천 떨어뜨리기 시작'}</button><div class="fall-stage ${clothStarted?'':'waiting'}" id="fallStage"><div class="sky-note">← 또는 → 로 밀어 보내기</div><div class="ground"></div></div><div class="meter"><div style="width:${(state.clothsCleared/(state.cloths.length||6))*100}%"></div></div><button class="secondary" onclick="resetCloths()">천 위치 초기화</button></div><button class="cta" onclick="goto(3)" ${!(state.ripped && state.clothsCleared>=(state.cloths.length||6))?'disabled':''}>액막이로 이어가기</button>`;
+    h=`<div class="eyebrow">第二 · 살풀이 煞풀이</div><h1 class="title">북을 울리고,<br>하늘의 흰 천을 날려보내세요</h1><p class="lead">북을 여러 번 두드려 장단을 만들고, 10회가 지나면 북가죽이 상징적으로 찢어집니다. 이후 하늘에서 내려오는 흰 천들을 땅에 닿기 전에 밀어 화면 밖으로 보내세요.</p>${info('살풀이·굿 장단','살풀이는 액이나 나쁜 기운을 풀어낸다는 의미와 연결됩니다. 굿에서는 북 같은 타악기가 의례의 장단과 몰입감을 이끕니다. 살풀이춤은 흰 수건으로 감정을 흘려보내는 정서를 보여줍니다.','앱에서의 북 파열은 전통 굿의 고정 절차가 아니라 “안에 갇힌 감정이 터져 밖으로 나온다”는 상징적 전환입니다.')}<div class="card center"><div class="small">북을 눌러 타격음을 들어보세요 · 10회 두드리면 전환</div><div class="drum-area"><div class="ripples" id="ripples"></div><button id="drum" class="drum-btn" onclick="hitDrum()" aria-label="북 두드리기" ${state.ripped?'disabled':''}>${drumSVG()}</button></div><div class="count" id="beatCount">${state.beats} <span style="font-size:14px;color:#cabac7">/ ${DRUM_TARGET}</span></div><div class="meter"><div id="drumMeter" style="width:${Math.min(100,state.beats/DRUM_TARGET*100)}%"></div></div><p class="${state.ripped?'success':'small'}">${state.ripped?'북가죽이 열리듯 응어리가 밖으로 터져 나왔습니다. 이제 떨어지는 흰 천을 밀어 밖으로 날려보내세요.':'북소리 · 파동 · 진동이 함께 반응합니다.'}</p><button class="secondary" onclick="resetDrum()">북 다시 만들기</button></div><div class="card ${state.ripped?'':'hidden'}"><div class="row"><b>흰 천 보내기</b><span class="badge">${state.clothsCleared} / ${state.cloths.length||6}</span></div><p class="small">북을 완전히 두드린 뒤, 아래 버튼을 눌렀을 때부터 천이 떨어집니다. 천을 땅에 닿기 전에 좌우로 스와이프하세요. 놓치면 다시 내려옵니다. 놓친 천은 위에서 다시 떨어집니다.</p><button class="fall-start" onclick="startCloths()" id="clothStart">${clothStarted?'↻ 떨어뜨리기 다시 시작':'☁ 흰 천 떨어뜨리기 시작'}</button><div class="fall-stage ${clothStarted?'':'waiting'}" id="fallStage"><div class="sky-note">← 또는 → 로 밀어 보내기</div><div class="ground"></div></div><div class="meter"><div style="width:${(state.clothsCleared/(state.cloths.length||6))*100}%"></div></div><button class="secondary" onclick="resetCloths()">천 위치 초기화</button></div><button class="cta" onclick="goto(3)" ${!(state.ripped && state.clothsCleared>=(state.cloths.length||6))?'disabled':''}>액막이로 이어가기</button>`;
   }
   if(state.page===3){
     h=`<div class="eyebrow">第三 · 액막이 厄막이</div><h1 class="title">부적의 한자를 따라 쓰며<br>평안을 기원해요</h1><p class="lead">평안·용기·개운·건강의 뜻을 담은 한자를 크게 배치했습니다. 손가락이나 마우스로 연한 회색 안내 글씨 위를 붓으로 먹을 찍듯 시작하고, 천천히 눌러 쓰다가 끝에서 가볍게 떼어보세요.</p>${info('액막이·부적','액막이는 앞으로 닥칠 액을 막고 안녕을 기원하는 관습입니다. 전통 부적에는 붉은 글씨·한자·부호가 다양한 방식으로 배치됩니다.','이 화면은 실제 평안과 길상을 기원하는 한자 어휘를 차용한 창작 배치입니다. 전통 부적의 효험을 그대로 재현한다고 주장하지 않습니다.')}<div class="field">기원할 뜻을 고르세요</div><div class="choices">${['평안','용기','새출발','건강'].map(w=>`<button class="chip ${state.wish===w?'selected':''}" onclick="changeWish('${w}')">${w}</button>`).join('')}</div><div class="card center"><div class="small">붓끝처럼 획 굵기가 변하는 한자 따라 쓰기</div><div class="amulet-shell"><div class="amulet-title">✦ ${escapeHTML(state.wish)} 부적 ✦</div><div class="talisman-wrap"><div class="grid-lines"></div><div class="talisman-text">${talismanColumns(state.wish)}</div><canvas id="traceCanvas"></canvas><div class="trace-mark">연한 안내 글씨를 붉게 따라 쓰기</div></div></div><p class="hint">두 글자를 각각 붓으로 따라 써주세요. 한 글자만 쓰면 완료되지 않습니다.</p><div class="row small"><span id="char1Progress">첫째 글자 · 0%</span><span id="char2Progress">둘째 글자 · 0%</span></div><div class="meter"><div id="drawMeter" style="width:${Math.round((Math.min(1,state.charInk[0]/110)+Math.min(1,state.charInk[1]/110))*50)}%"></div></div><button class="secondary" onclick="clearDrawing()">다시 쓰기</button></div><button class="cta" id="finishBtn" onclick="finish()" ${!bothCharactersDone()?'disabled':''}>의식 마무리하기</button>`;
@@ -105,15 +106,15 @@ function bindKnot(){
  const point=e=>{const r=svg.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*360,y:(e.clientY-r.top)/r.height*240}};
  svg.addEventListener('pointerdown',e=>{if(!e.target.closest('.knot-grab'))return;e.preventDefault();dragging=true;start=point(e);svg.setPointerCapture(e.pointerId)});
  svg.addEventListener('pointermove',e=>{
-   if(!dragging)return;e.preventDefault();const current=point(e);const dx=current.x-start.x,dy=current.y-start.y;
-   // Direction changes in the third action: lift -> pull right -> pull down.
-   progress=Math.max(0,Math.min(1,state.knotStep===0?(-dy)/55:state.knotStep===1?dx/66:dy/65));
+   if(!dragging)return;e.preventDefault();const current=point(e);const dy=current.y-start.y;
+   // One upward pull completes the current knot.
+   progress=Math.max(0,Math.min(1,(-dy)/55));
    updateKnotVisual(progress);
    const hint=$('#knotHint');if(hint)hint.textContent=`${knotInstruction()} · ${Math.round(progress*100)}%`;
  });
  const release=()=>{
    if(!dragging)return;dragging=false;
-   if(progress>=.82){state.knotStep++;navigator.vibrate?.(22);if(state.knotStep>=3){state.knotStep=0;state.knotIndex++;message(state.knotIndex>=3?'세 감정을 모두 풀었습니다.':'하나의 감정이 풀렸습니다.');}render();}
+   if(progress>=.82){state.knotStep=0;state.knotIndex++;navigator.vibrate?.(22);message(state.knotIndex>=3?'세 감정의 매듭을 모두 풀었습니다.':'하나의 감정이 풀렸습니다.');render();}
    else {updateKnotVisual(0);const hint=$('#knotHint');if(hint)hint.textContent=knotInstruction();}
    progress=0;
  };
@@ -156,8 +157,8 @@ function hitDrum(){
   state.beats += 1; audio(); if(navigator.vibrate) navigator.vibrate(24);
   const b=$('#drum'); b?.classList.add('hit'); setTimeout(()=>b?.classList.remove('hit'),80);
   const rp=document.createElement('i'); rp.className='ripple'; $('#ripples')?.appendChild(rp); setTimeout(()=>rp.remove(),900);
-  if(state.beats>=30){ state.ripped=true; playRip(); if(navigator.vibrate) navigator.vibrate([55,60,80]); if(!state.cloths.length) setupCloths(); render(); message('북이 찢어졌습니다. 응어리가 터져 밖으로 나온다는 긍정적 전환을 상징합니다.'); }
-  else { $('#beatCount').innerHTML=state.beats+' <span style="font-size:14px;color:#cabac7">/ 30</span>'; $('#drumMeter').style.width=Math.min(100,state.beats/30*100)+'%'; if(state.beats===15) $('#drum').innerHTML=drumSVG(); }
+  if(state.beats>=DRUM_TARGET){ state.ripped=true; playRip(); if(navigator.vibrate) navigator.vibrate([55,60,80]); if(!state.cloths.length) setupCloths(); render(); message('북이 찢어졌습니다. 응어리가 터져 밖으로 나온다는 긍정적 전환을 상징합니다.'); }
+  else { $('#beatCount').innerHTML=state.beats+' <span style="font-size:14px;color:#cabac7">/ '+DRUM_TARGET+'</span>'; $('#drumMeter').style.width=Math.min(100,state.beats/DRUM_TARGET*100)+'%'; if(state.beats===DRUM_TARGET/2) $('#drum').innerHTML=drumSVG(); }
 }
 function resetDrum(){ state.beats=0; state.ripped=false; state.clothsCleared=0; state.cloths=[]; clothStarted=false; stopClothAnim(); render(); }
 function setupCloths(){
@@ -308,7 +309,44 @@ function finish(){if(!bothCharactersDone()){message('첫째와 둘째 글자를 
 function saveSummary(){ try{ const entries=JSON.parse(localStorage.getItem('maeumpuri_summary')||'[]'); entries.push({date:new Date().toISOString().slice(0,10),before:state.before,after:state.after,completed:true}); localStorage.setItem('maeumpuri_summary',JSON.stringify(entries.slice(-30))); $('#saveStatus').textContent='익명 완료 기록을 이 브라우저에 저장했습니다.'; }catch(e){ message('이 브라우저에서는 저장할 수 없습니다.'); } }
 function clearRecords(){ try{ localStorage.removeItem('maeumpuri_summary'); message('로컬 완료 기록을 삭제했습니다.'); }catch(e){ message('삭제 기능을 사용할 수 없습니다.'); } }
 function restart(){ stopClothAnim(); clothStarted=false; Object.assign(state,{page:0,before:3,after:3,nickname:'',feeling:'',knotIndex:0,knotStep:0,beats:0,ripped:false,clothsCleared:0,cloths:[],wish:'평안',drawing:false,drawnLength:0,charInk:[0,0]}); render(); }
-$('#soundBtn').addEventListener('click',()=>{state.sound=!state.sound; $('#soundBtn').textContent=state.sound?'🔊 소리 켜짐':'🔇 소리 꺼짐';});
+// Start music only after a user gesture, as required by browser autoplay policies.
+const musicTracks = [new Audio('assets/background-music.mp3'), new Audio('assets/background-music.mp3')];
+const musicVolume = 0.25;
+const fadeSeconds = 2;
+let activeMusic = 0, musicStarted = false, musicFading = false, musicFadeFrame = null;
+for (const track of musicTracks) { track.loop = true; track.preload = 'metadata'; track.volume = musicVolume; }
+function startMusic() {
+  if (!state.sound) return;
+  musicTracks[activeMusic].play().then(() => { musicStarted = true; }).catch(() => { musicStarted = false; });
+}
+function pauseMusic() {
+  if (musicFadeFrame !== null) cancelAnimationFrame(musicFadeFrame);
+  musicFadeFrame = null; musicFading = false;
+  musicTracks.forEach((track, index) => { track.pause(); track.volume = musicVolume; if (index !== activeMusic) track.currentTime = 0; });
+}
+function crossfadeMusic() {
+  const current = musicTracks[activeMusic];
+  if (!state.sound || musicFading || !Number.isFinite(current.duration) || current.duration <= fadeSeconds * 2 || current.duration - current.currentTime > fadeSeconds) return;
+  musicFading = true;
+  const nextIndex = 1 - activeMusic, next = musicTracks[nextIndex];
+  next.currentTime = 0; next.volume = 0;
+  next.play().then(() => {
+    if (!state.sound || !musicFading) { next.pause(); return; }
+    const startedAt = performance.now();
+    const fade = now => {
+      if (!state.sound || !musicFading) return;
+      const progress = Math.min(1, (now - startedAt) / (fadeSeconds * 1000));
+      current.volume = musicVolume * (1 - progress);
+      next.volume = musicVolume * progress;
+      if (progress < 1) musicFadeFrame = requestAnimationFrame(fade);
+      else { current.pause(); current.currentTime = 0; current.volume = musicVolume; activeMusic = nextIndex; musicFading = false; musicFadeFrame = null; }
+    };
+    musicFadeFrame = requestAnimationFrame(fade);
+  }).catch(() => { musicFading = false; next.volume = musicVolume; });
+}
+musicTracks.forEach(track => track.addEventListener('timeupdate', () => { if (track === musicTracks[activeMusic]) crossfadeMusic(); }));
+for (const event of ['pointerdown', 'keydown']) document.addEventListener(event, () => { if (!musicStarted && state.sound) startMusic(); });
+$('#soundBtn').addEventListener('click',()=>{state.sound=!state.sound; $('#soundBtn').textContent=state.sound?'🔊 소리 켜짐':'🔇 소리 꺼짐'; if(state.sound) startMusic(); else pauseMusic();});
 render();
 
 // Speech bubbles can be opened with a pointer, touch, or keyboard.

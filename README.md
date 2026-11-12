@@ -15,7 +15,9 @@ python server.py
 
 브라우저에서 `http://localhost:8000`을 엽니다. Windows에서 `python`이 안 되면 `py server.py`를 사용하세요. 종료는 `Ctrl+C`입니다. macOS/Linux에서는 `export OPENAI_API_KEY="발급받은_OpenAI_API_키"`로 설정합니다. 키 없이도 마음풀이를 이용할 수 있지만 사주풀이에는 [OpenAI API 키](https://platform.openai.com/api-keys)가 필요합니다. 키를 코드나 Git에 넣지 마세요. 팀원은 각자 키를 설정할 수 있습니다.
 
-사주 기능은 `python -m http.server`가 아닌 `python server.py`로 실행해야 합니다. 서버는 해당 컴퓨터의 localhost에서만 이용하는 개발용입니다. `index.html`, `styles.css`, `app.js`, `server.py`와 `assets/`를 함께 사용합니다. 글꼴은 Google Fonts를 불러오며 연결되지 않으면 시스템 글꼴을 사용합니다.
+사주 기능은 `python -m http.server`가 아닌 `python server.py`로 실행해야 합니다. 서버는 해당 컴퓨터의 localhost에서만 이용하는 개발용입니다. `index.html`, `styles.css`, `app.js`, `server.py`와 `assets/`를 함께 사용합니다. 조선궁서체 웹폰트를 불러오며, 불러오지 못하거나 지원하지 않는 문자는 대체 글꼴로 표시합니다.
+
+배경음악은 첫 클릭 또는 키 입력 후 재생되며 반복 구간에서 부드럽게 전환됩니다. 마음풀이 화면의 소리 버튼은 배경음악과 효과음을 함께 켜고 끕니다.
 
 ## 데이터와 현재 범위
 
@@ -38,12 +40,15 @@ python server.py
 8. Gemini 연결 오류를 점검하고 `gemini-3.5-flash`로 모델을 변경해 로컬 API 응답을 확인했습니다.
 9. 첫 배포를 위해 Vercel용 사주 API 함수와 정적 파일 빌드를 추가했습니다. 배포 환경의 `OPENAI_API_KEY`는 Vercel 프로젝트 환경 변수로 설정합니다.
 
-10. 배포 과정에서 사용자 요청에 따라 사주 해석을 Gemini에서 OpenAI Responses API로 전환했습니다.
+10. 배포 과정에서 사용자 요청에 따라 사주 해석을 Gemini에서 OpenAI Responses API로 전환하고, Vercel 배포에서 실제 응답을 확인했습니다.
+11. 조선궁서체를 로고와 제목에 먼저 적용한 뒤 전체 화면에 적용했습니다.
+12. 제공된 배경음악을 추가하고 첫 사용자 조작 후 재생되며, 반복 시 곡을 겹쳐 전환하도록 설정했습니다. 기존 소리 버튼에 음악과 효과음을 함께 연결했습니다.
+13. 감정 매듭은 각각 한 번씩 총 세 번 당겨 풀고, 북은 열 번 치면 다음 단계로 넘어가도록 조정했습니다.
 
 ## Vercel 배포
 
-Vercel에서 프로젝트를 연결하고 Production 환경 변수로 `OPENAI_API_KEY`를 설정하세요. `vercel.json`의 `node build.mjs`가 화면과 사용 중인 에셋을 `public/`에 생성하고, `/api/fortune`은 Vercel 함수가 처리합니다. 키는 배포 설정에만 보관하고 저장소에 커밋하지 않습니다. 이 API에는 사용자 인증이나 사용량 제한이 없으므로 공개 운영 전 접근 제어와 비용 제한을 마련해야 합니다.
+현재 Vercel 프로젝트는 직접 배포 방식이며 GitHub 자동 배포는 연결되어 있지 않습니다. Production 환경 변수로 `OPENAI_API_KEY`를 설정하세요. `vercel.json`의 `node build.mjs`가 화면과 사용 중인 에셋을 `public/`에 생성하고, `/api/fortune`은 Vercel 함수가 처리합니다. 키는 배포 설정에만 보관하고 저장소에 커밋하지 않습니다. 이 API에는 사용자 인증이나 사용량 제한이 없으므로 공개 운영 전 접근 제어와 비용 제한을 마련해야 합니다.
 
 ## 확인 현황
 
-JavaScript 및 Python 구문, 정적 파일 빌드, 사주 API의 입력 검증을 확인했습니다. OpenAI 전환 후 배포 환경의 실제 요청은 별도 확인이 필요합니다. 실제 브라우저의 화면 배치와 배포 환경의 전체 흐름은 별도로 확인해야 합니다.
+JavaScript 및 Python 구문, 정적 파일 빌드, 사주 API의 입력 검증을 확인했습니다. 앞선 OpenAI 배포에서 실제 응답을 확인했고, 매듭 세 번과 북 열 번의 완료 조건을 모의 테스트했습니다. 실제 브라우저에서 전체 화면 흐름과 배경음악 전환은 별도로 확인해야 합니다.
