@@ -8,7 +8,35 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<main class="app">
+<section class="opening" id="opening" aria-label="마음풀이 오프닝">
+  <div class="opening-sky" aria-hidden="true"><span class="moon"></span></div>
+  <div class="opening-scene">
+    <div class="guardian guardian-left">
+      <button type="button" class="guardian-button" aria-label="왼쪽 인물의 말 듣기" aria-expanded="false" aria-controls="leftSpeech"><img class="opening-guardian" src="assets/guardian-gold.png" alt=""></button>
+      <div class="speech-bubble" id="leftSpeech" role="status" hidden>짐이 관심법으로 보아하니, 네 놈의 머릿속에는 마구니가 가득하구나</div>
+    </div>
+  <div class="opening-content">
+    <p class="opening-eyebrow">잠시 쉬어가는 마음의 자리</p>
+    <h1 class="opening-logo">✦ 마음풀이</h1>
+    <p class="opening-lead">오늘의 마음을 가만히 풀어보세요</p>
+    <button class="opening-start" id="openingStart" type="button">마음풀이 하기 <span aria-hidden="true">→</span></button>
+  </div>
+    <div class="guardian guardian-right">
+      <button type="button" class="guardian-button" aria-label="오른쪽 인물의 말 듣기" aria-expanded="false" aria-controls="rightSpeech"><img class="opening-guardian" src="assets/guardian-white.png" alt=""></button>
+      <div class="speech-bubble" id="rightSpeech" role="status" hidden>험한것이 나왔군...</div>
+    </div>
+  </div>
+  <div class="gate" aria-hidden="true">
+    <div class="gate-roof"><div class="roof-ridge"></div><div class="roof-eave"></div></div>
+    <div class="gate-beam"></div>
+    <div class="gate-post gate-post-left"></div><div class="gate-post gate-post-right"></div>
+    <div class="door door-left"><span class="door-ring"></span></div><div class="door door-right"><span class="door-ring"></span></div>
+    <div class="jangseung jangseung-left"><div class="jangseung-face"><span>◉　◉</span><b>︿</b></div><div class="jangseung-name">天下大將軍<small>천하대장군</small></div></div>
+    <div class="jangseung jangseung-right"><div class="jangseung-face"><span>◉　◉</span><b>︿</b></div><div class="jangseung-name">地下大將軍<small>지하대장군</small></div></div>
+  </div>
+</section>
+<div class="smoke" id="transitionSmoke" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+<main class="app" id="mainApp" hidden>
 <header class="header"><div class="brand">✦ 마음풀이</div><button class="sound" id="soundBtn">🔊 소리 켜짐</button></header>
 <div class="progress" id="progress"></div><nav class="app-nav"><button type="button" id="backBtn" onclick="goBack()">← 전 단계로 돌아가기</button><button type="button" onclick="restart()">↺ 처음부터 다시 하기</button></nav>
 <section id="screen" aria-live="polite"></section>

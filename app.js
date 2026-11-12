@@ -76,7 +76,7 @@ function drumSVG(){return `<svg viewBox="0 0 260 260" aria-hidden="true"><defs><
 function render(){
   progress();
   let h='';
-  if(state.page===0){h=`<div class="eyebrow">MVP 시작</div><h1 class="title">마음풀이 의식을<br>시작합니다</h1><p class="lead">지금의 답답함을 짧은 의식으로 정리해보세요. 시작 전 마음 상태를 먼저 골라주세요.</p>${info('앱의 방식','해원 → 살풀이 → 액막이의 순서로 진행합니다. 각각은 맺힌 감정 풀기, 감정 털어내기, 평안 기원하기의 의미를 가집니다.')}<div class="card"><div class="field">현재 스트레스 강도 (1~5)</div>${score('before')}</div><button class="cta" onclick="goto(1)">해원 시작하기</button>`}
+  if(state.page===0){h=`<div class="eyebrow">MVP 시작</div><h1 class="title" tabindex="-1">마음풀이 의식을<br>시작합니다</h1><p class="lead">지금의 답답함을 짧은 의식으로 정리해보세요. 시작 전 마음 상태를 먼저 골라주세요.</p>${info('앱의 방식','해원 → 살풀이 → 액막이의 순서로 진행합니다. 각각은 맺힌 감정 풀기, 감정 털어내기, 평안 기원하기의 의미를 가집니다.')}<div class="card"><div class="field">현재 스트레스 강도 (1~5)</div>${score('before')}</div><button class="cta" onclick="goto(1)">해원 시작하기</button>`}
   if(state.page===1){
     const labels=emotionSegments();
     h=`<div class="eyebrow">第一 · 해원 解冤</div><h1 class="title">감정을 적고,<br>매듭에서 직접 풀어내세요</h1><p class="lead">적어둔 감정이 종잇조각처럼 매듭에 묶입니다. 빛나는 순서대로 고리를 느슨하게 만들고, 빼내고, 끝줄을 당겨 풀어보세요.</p>${info('해원·고풀이','해원은 맺힌 원한이나 억울함을 푼다는 뜻입니다. 전라도 씻김굿의 고풀이에서는 매듭을 풀어 한을 해소하는 모습을 상징적으로 표현합니다.','이 화면에서는 사용자가 적은 감정 조각을 매듭에 매단 뒤, 3단계 동작으로 풀어내는 창작적 체험으로 바꾸었습니다.')}<label class="field" for="nick">마음에 걸리는 대상·상황의 별명 (선택)</label><input class="input" id="nick" maxlength="30" placeholder="예: 직장 동료, 마감, 관계" value="${escapeHTML(state.nickname)}" oninput="state.nickname=this.value"><label class="field" for="feeling">풀어내고 싶은 감정이나 말 (선택)</label><textarea class="input" id="feeling" maxlength="300" placeholder="예: 배고픔 짜증남 졸림 (띄어쓰기 또는 쉼표로 구분)" oninput="state.feeling=this.value;refreshEmotionPreview()">${escapeHTML(state.feeling)}</textarea><div class="emotion-tags">${labels.map((x,i)=>`<span>${i+1}. ${escapeHTML(x)}</span>`).join('')}</div><div class="card"><div class="row"><b>감정 매듭 ${Math.min(3,state.knotIndex+1)} / 3</b><span class="badge">3단계로 풀기</span></div><div class="knot-tabs">${labels.map((x,i)=>`<button class="${i<state.knotIndex?'done':i===state.knotIndex?'active':''}" onclick="selectKnot(${i})">${i<state.knotIndex?'✓ ':''}${escapeHTML(x)}</button>`).join('')}</div><div class="knot-card">${drawKnot()}</div><div class="step-list"><div class="${state.knotStep>0?'done':state.knotStep===0?'active':''}">느슨하게 올리기</div><div class="${state.knotStep>1?'done':state.knotStep===1?'active':''}">고리 빼내기</div><div class="${state.knotStep>2?'done':state.knotStep===2?'active':''}">끝줄 당기기</div></div><p class="hint center" id="knotHint">${state.knotIndex>=3?'세 감정의 매듭을 모두 풀었습니다.':knotInstruction()}</p><div class="meter"><div style="width:${(state.knotIndex/3)*100}%"></div></div><button class="secondary" onclick="assistKnot()">동작이 어려우면 현재 매듭 건너뛰기</button></div><button class="cta" onclick="goto(2)" ${state.knotIndex<3?'disabled':''}>살풀이로 이어가기</button>`;
@@ -310,3 +310,65 @@ function clearRecords(){ try{ localStorage.removeItem('maeumpuri_summary'); mess
 function restart(){ stopClothAnim(); clothStarted=false; Object.assign(state,{page:0,before:3,after:3,nickname:'',feeling:'',knotIndex:0,knotStep:0,beats:0,ripped:false,clothsCleared:0,cloths:[],wish:'평안',drawing:false,drawnLength:0,charInk:[0,0]}); render(); }
 $('#soundBtn').addEventListener('click',()=>{state.sound=!state.sound; $('#soundBtn').textContent=state.sound?'🔊 소리 켜짐':'🔇 소리 꺼짐';});
 render();
+
+// Speech bubbles can be opened with a pointer, touch, or keyboard.
+const opening = document.querySelector('#opening');
+const mainApp = document.querySelector('#mainApp');
+const smoke = document.querySelector('#transitionSmoke');
+const startButton = document.querySelector('#openingStart');
+const guardians = [...document.querySelectorAll('.guardian')];
+const rightSpeech = document.querySelector('#rightSpeech');
+let entering = false;
+
+guardians.forEach(guardian => {
+  const button = guardian.querySelector('.guardian-button');
+  const bubble = guardian.querySelector('.speech-bubble');
+  let pinned = false;
+  const show = visible => {
+    bubble.hidden = !visible;
+    button.setAttribute('aria-expanded', String(visible));
+  };
+  const resetRight = () => {
+    if (bubble === rightSpeech) bubble.textContent = '험한것이 나왔군...';
+  };
+  button.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') { resetRight(); show(true); } });
+  button.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' && !pinned && document.activeElement !== button) show(false); });
+  button.addEventListener('focus', () => { resetRight(); show(true); });
+  button.addEventListener('blur', () => { if (!pinned) show(false); });
+  button.addEventListener('click', () => {
+    resetRight();
+    pinned = !pinned;
+    show(pinned);
+  });
+});
+
+const reminder = setTimeout(() => {
+  if (entering) return;
+  rightSpeech.textContent = '빨리 말해 씨1발롬아';
+  rightSpeech.hidden = false;
+  guardians[1].querySelector('.guardian-button').setAttribute('aria-expanded', 'true');
+}, 10000);
+
+startButton.addEventListener('click', () => {
+  if (entering) return;
+  entering = true;
+  clearTimeout(reminder);
+  startButton.disabled = true;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reducedMotion) {
+    opening.hidden = true;
+    mainApp.hidden = false;
+    mainApp.querySelector('h1')?.focus();
+    window.scrollTo(0, 0);
+    return;
+  }
+  smoke.classList.add('covering');
+  setTimeout(() => {
+    opening.hidden = true;
+    mainApp.hidden = false;
+    window.scrollTo(0, 0);
+    mainApp.querySelector('h1')?.focus();
+    smoke.classList.replace('covering', 'clearing');
+    setTimeout(() => smoke.classList.remove('clearing'), 900);
+  }, 900);
+});
