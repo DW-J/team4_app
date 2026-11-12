@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#17131d" />
+<title>마음풀이</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main class="app">
+<header class="header"><div class="brand">✦ 마음풀이</div><button class="sound" id="soundBtn">🔊 소리 켜짐</button></header>
+<div class="progress" id="progress"></div><nav class="app-nav"><button type="button" id="backBtn" onclick="goBack()">← 전 단계로 돌아가기</button><button type="button" onclick="restart()">↺ 처음부터 다시 하기</button></nav>
+<section id="screen" aria-live="polite"></section>
+<footer class="footer">전통 의례에서 영감을 얻은 창작 체험 · 의학적 치료가 아닙니다</footer>
+</main>
+<script src="app.js" defer></script>
+</body>
+</html>
